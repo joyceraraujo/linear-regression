@@ -12,72 +12,12 @@ Created on Tue Aug 18 22:13:21 2020
 import numpy as np
 import pandas as pd 
 from sklearn.linear_model import LinearRegression
-import matplotlib.pyplot as plt 
 from sklearn.model_selection import train_test_split 
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.model_selection import learning_curve
+import Metrics
 from sklearn.linear_model import SGDRegressor
-
-
-# function to plot learning curve
-def plot_learning_curve(X,y,train_sizes):
+import BatchGradientDescent
+import Plotting
     
-    train_sizes, train_scores, validation_scores = learning_curve(
-    estimator = LinearRegression(),
-    X = X,
-    y = y, train_sizes = train_sizes, cv = 5,
-    scoring = 'neg_mean_squared_error')
-    train_scores_mean = -train_scores.mean(axis = 1)
-    validation_scores_mean = -validation_scores.mean(axis = 1 )
-    plt.style.use('seaborn')
-    plt.plot(train_sizes, train_scores_mean, label = 'Training error')
-    plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
-    plt.ylabel('MSE', fontsize = 14)
-    plt.xlabel('Training set size', fontsize = 14)
-    plt.title('Learning curves for a linear regression model', fontsize = 18, y = 1.03)
-    plt.legend()
-    plt.show() 
-    
-# function to plot the result of linear regression  
-def plot_linear_regression(X_test,y_test,y_pred):
-    
-    plt.scatter(X_test, y_test,  color='red')
-    plt.plot(X_test, y_pred, color='blue', linewidth=3)
-    plt.ylabel('Profit', fontsize = 14)
-    plt.xlabel('Population', fontsize = 14)
-    plt.title('Linear regression model', fontsize = 18, y = 1.03)
-    plt.show()
-    
-def metrics(y_test, y_pred):
-    
-    print('Coefficient of determination: %.2f' % r2_score(y_test, y_pred))
-    # The mean squared error
-    print('Mean squared error: %.2f'
-      % mean_squared_error(y_test, y_pred))
-#  functions to use in Gradient Descent method
-def hypothesis(theta, x):
-
-    h = (theta*x).sum(axis=1).reshape(-1,1)
-    
-    return h
-
-def cost(theta,m,X,y):
-    h =  hypothesis(theta, X)
-    J = (h-y)**2
-    J = J.sum()/(2*m)
-    return J
-
-def gradientDescent(initial_theta,alpha,X,y,m, iterations):
-    i = 1
-    theta = initial_theta
-    while i <= iterations: 
-        h = hypothesis(theta, X)
-        term_update = ((h-y)*X).sum(axis=0)      
-        theta = theta - (alpha *term_update/m) 
-        i = i + 1 
-        
-    return theta
-
 
         
 # getting data : 
@@ -90,7 +30,7 @@ y = df_data.iloc[:, 1].values.reshape(-1, 1)  # -1 means that calculate the dime
 
 # plotting learning curve to visualize if the model has an high bias
 train_sizes = [1, 10, 15, 20, 30,40, 50,60,70, 77]
-plot_learning_curve(X,y,train_sizes)
+Plotting.plot_learning_curve(X,y,train_sizes)
 
 
 # PART 1 : linear regression by using sklearn.linear_model
@@ -106,9 +46,9 @@ y_pred = linear_regressor.predict(X_test)
 
 # Some metrics to evaluate the model
 print("# 1) Method : linear regression by using sklearn.linear_model")
-metrics(y_test, y_pred)
+Metrics.metrics(y_test, y_pred)
 
-plot_linear_regression(X_test,y_test,y_pred)
+Plotting.plot_linear_regression(X_test,y_test,y_pred)
 
 # PART 2 : linear regression with Batch Gradient Descent 
 
@@ -122,11 +62,11 @@ m = len(X)
 iterations = 1500;
 alpha = 0.01;
 
-theta = gradientDescent(initial_theta,alpha,X,y,m, iterations)
+theta = BatchGradientDescent.gradientDescent(initial_theta,alpha,X,y,m, iterations)
 #x_test = np.array([[1, 3.5],[1, 7]])
-y_pred = hypothesis(theta, X)
+y_pred = BatchGradientDescent.hypothesis(theta, X)
 print("# 2) Method :linear regression with Batch Gradient Descent without splitting the data")
-metrics(y, y_pred)
+Metrics.metrics(y, y_pred)
 
 
 
@@ -140,10 +80,10 @@ X_test = np.insert(X_test,0,values=1, axis=1)
 iterations = 1500;
 alpha = 0.01;
 
-theta = gradientDescent(initial_theta,alpha,X_train,y_train,m, iterations)
+theta = BatchGradientDescent.gradientDescent(initial_theta,alpha,X_train,y_train,m, iterations)
 
-y_pred = hypothesis(theta, X_test)
+y_pred = BatchGradientDescent.hypothesis(theta, X_test)
 
 # Some metrics to evaluate the model
 print("# 3) Method :linear regression with Batch Gradient Descent by splitting the data")
-metrics(y_test, y_pred)
+Metrics.metrics(y_test, y_pred)

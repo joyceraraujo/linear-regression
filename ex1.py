@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split 
+from sklearn.preprocessing import StandardScaler
 import Metrics
 # from sklearn.linear_model import SGDRegressor
 import BatchGradientDescent
@@ -21,9 +22,14 @@ import Plotting
 def getting_data(data_file):
     
     df_data =  pd.read_csv(data_file, sep=",", header=None)
-    X = df_data.iloc[:, 0].values.reshape(-1, 1)  # values converts it into a numpy array
-    y = df_data.iloc[:, 1].values.reshape(-1, 1)  # -1 means that calculate the dimension of rows, but have 1 column
-   
+    if df_data.shape[1] == 2:
+    
+        X = df_data.iloc[:, 0:-1].values.reshape(-1, 1)  # values converts it into a numpy array
+        y = df_data.iloc[:, -1].values.reshape(-1, 1)  # -1 means that calculate the dimension of rows, but have 1 column
+    else:
+        X = df_data.iloc[:, 0:-1].values  # values converts it into a numpy array
+        y = df_data.iloc[:, -1].values.reshape(-1, 1)  # -1 means that calculate the dimension of rows, but have 1 column
+        
     return X,y 
 
 def split_dataSet(X,y):
@@ -55,6 +61,7 @@ Plotting.plot_learning_curve(X,y,train_sizes)
 # Splitting the data
 X_train, X_test, y_train, y_test = split_dataSet(X,y)
 # Train the model using the training sets
+
 reg = train_linearRegression(X_train, y_train)
 # Make predictions using the testing set
 y_pred = reg.predict(X_test)
@@ -80,7 +87,7 @@ theta = BatchGradientDescent.gradientDescent(initial_theta,alpha,X,y,m, iteratio
 # Make predictions 
 y_pred = BatchGradientDescent.hypothesis(theta, X)
 # Some metrics to evaluate the model
-print("# 2) Method :linear regression with Batch Gradient Descent without splitting the data")
+print("# 2. a) Method :linear regression with Batch Gradient Descent without splitting the data")
 Metrics.metrics(y, y_pred)
 
 
@@ -100,9 +107,75 @@ theta = BatchGradientDescent.gradientDescent(initial_theta,alpha,X_train,y_train
 y_pred = BatchGradientDescent.hypothesis(theta, X_test)
 
 # Some metrics to evaluate the model
-print("# 3) Method :linear regression with Batch Gradient Descent by splitting the data")
+print("# 2. b) Method :linear regression with Batch Gradient Descent by splitting the data")
 Metrics.metrics(y_test, y_pred)
 
 
 # PART 3 : Linear regression with multiple variables
+
+# getting data : 
+data_file = "ex1data2.txt"
+X,y = getting_data(data_file)
+
+
+# plotting learning curve to visualize if the model has an high bias
+train_sizes = [1, 5, 15, 20, 37]
+Plotting.plot_learning_curve(X,y,train_sizes)
+
+
+# 3. a) Not Splitting the data
+# Feature Normalization
+X_stand =  StandardScaler().fit_transform(X)
+# Train the model using the training sets
+reg = train_linearRegression(X_stand, y)
+# Make predictions using the testing set
+y_pred = reg.predict(X_stand)
+# Some metrics to evaluate the model
+print("# 3. a) Method : linear regression with multiple variables by using sklearn.linear_model - without splitting the data")
+Metrics.metrics(y, y_pred)
+
+#  3. b) Splitting the data
+X_train_stand, X_test_stand , y_train, y_test = split_dataSet(X_stand,y)
+# Train the model using the training sets
+reg = train_linearRegression(X_train_stand, y_train)
+# Make predictions using the testing set
+y_pred = reg.predict(X_test_stand)
+# Some metrics to evaluate the model
+print("# 3. b) Method : linear regression with multiple variables by using sklearn.linear_model - splitting the data")
+Metrics.metrics(y_test, y_pred)
+
+
+
+#  3. c)Applying Gradient Descent
+initial_theta = np.zeros(3) # initialize fitting parameters
+X_stand = np.insert(X_stand,0,values=1, axis=1)
+m = len(X_stand)
+iterations = 1500;
+alpha = 0.01;
+
+theta = BatchGradientDescent.gradientDescent(initial_theta,alpha,X_stand,y,m, iterations)
+# Make predictions using the testing set
+y_pred = BatchGradientDescent.hypothesis(theta, X_stand)
+
+# Some metrics to evaluate the model
+print("# 3. c) Method :linear regression with multiple variables with Batch Gradient Descent without splitting the data")
+Metrics.metrics(y, y_pred)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
